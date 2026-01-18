@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4 mb-4">
+        <i class="bi bi-shield-shaded text-primary"></i><br>
+        CyberIncident
+    </h1>
+    <p class="lead mb-4">
+        Sistema de Registro y Análisis de Incidentes de Seguridad
+    </p>
+    
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4>Acciones disponibles:</h4>
+                    <div class="d-grid gap-3 mt-4">
+                        <a href="/incidente/nuevo" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle"></i> Reportar Nuevo Incidente
+                        </a>
+                        <a href="/incidentes" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-list-ul"></i> Ver Incidentes Registrados
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
