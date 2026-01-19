@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}Nuevo Incidente - CyberIncident{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
@@ -8,57 +10,83 @@
                 <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Registrar Nuevo Incidente</h4>
             </div>
             <div class="card-body">
-                <form method="post">
-                    <div class="mb-3">
-                        <label class="form-label">Título del Incidente *</label>
-                        <input type="text" class="form-control" name="titulo" required 
-                               placeholder="Ej: Intento de intrusión detectado">
+                <form method="post" enctype="multipart/form-data" id="incidenteForm">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Título del Incidente *</label>
+                            {{ form.titulo(class="form-control", placeholder="Ej: Intento de intrusión detectado en servidor web") }}
+                            {% for error in form.titulo.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Usuario que Reporta</label>
+                            {{ form.usuario_reporta(class="form-control", placeholder="Opcional") }}
+                        </div>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Descripción Detallada *</label>
-                        <textarea class="form-control" name="descripcion" rows="5" required
-                                  placeholder="Describa el incidente en detalle..."></textarea>
+                            {{ form.descripcion(class="form-control", rows=5, 
+                                placeholder="Describa el incidente en detalle:\n- Qué sucedió\n- Cuándo ocurrió\n- Impacto estimado\n- Acciones tomadas") }}
+                            {% for error in form.descripcion.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
                     </div>
                     
-                    <div class="row mb-3">
+                    <div class="row mb-4">
                         <div class="col-md-6">
                             <label class="form-label">Tipo de Incidente *</label>
-                            <select class="form-select" name="tipo" required>
-                                <option value="">Seleccione un tipo</option>
-                                <option value="intrusion">Intrusión</option>
-                                <option value="malware">Malware</option>
-                                <option value="phishing">Phishing</option>
-                                <option value="ddos">DDoS</option>
-                                <option value="config_error">Error de Configuración</option>
-                                <option value="data_leak">Fuga de Datos</option>
-                                <option value="otro">Otro</option>
-                            </select>
+                            {{ form.tipo(class="form-select") }}
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Nivel de Severidad *</label>
-                            <select class="form-select" name="severidad" required>
-                                <option value="">Seleccione severidad</option>
-                                <option value="baja">Baja</option>
-                                <option value="media">Media</option>
-                                <option value="alta">Alta</option>
-                                <option value="critica">Crítica</option>
-                            </select>
+                            {{ form.severidad(class="form-select") }}
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>Baja:</strong> Impacto mínimo | 
+                                    <strong>Media:</strong> Impacto moderado |
+                                    <strong>Alta:</strong> Impacto significativo |
+                                    <strong>Crítica:</strong> Impacto grave
+                                </small>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label">Usuario que Reporta</label>
-                        <input type="text" class="form-control" name="usuario_reporta" 
-                               placeholder="Opcional - Dejar en blanco para Anónimo">
+                    <!-- Evidencias -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-paperclip"></i> Evidencias (Opcional)</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Subir Archivos de Evidencia</label>
+                                <input type="file" class="form-control" name="evidencias" multiple 
+                                       accept=".pdf,.png,.jpg,.jpeg,.txt,.log,.pcap,.gif,.bmp,.webp"
+                                       id="fileInput">
+                                <div class="form-text mt-2">
+                                    <i class="bi bi-info-circle"></i> Formatos permitidos: PDF, PNG, JPG, JPEG, GIF, BMP, WebP, TXT, LOG, PCAP
+                                    (Máximo 16MB por archivo)
+                                </div>
+                            </div>
+                            
+                            <!-- Estado de carga -->
+                            <div id="uploadStatus" class="mt-3"></div>
+                            
+                            <!-- Vista previa simple -->
+                            <div id="filePreview" class="mt-3"></div>
+                        </div>
                     </div>
                     
                     <div class="d-flex justify-content-between mt-4">
-                        <a href="/incidentes" class="btn btn-outline-secondary">
+                        <a href="{{ url_for('listar_incidentes') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left"></i> Cancelar
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Registrar Incidente
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="bi bi-save"></i> Registrar Incidente
                         </button>
                     </div>
                 </form>
@@ -66,4 +94,231 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Función para mostrar vista previa simple y validar
+    function updateFilePreview() {
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('filePreview');
+        const uploadStatus = document.getElementById('uploadStatus');
+        
+        preview.innerHTML = '';
+        uploadStatus.innerHTML = '';
+        
+        if (fileInput.files.length === 0) {
+            preview.innerHTML = `
+                <div class="alert alert-secondary">
+                    <i class="bi bi-info-circle"></i> No hay archivos seleccionados
+                </div>
+            `;
+            return;
+        }
+        
+        // Mostrar lista de archivos
+        const fileList = document.createElement('div');
+        fileList.className = 'list-group';
+        
+        let totalSize = 0;
+        let hasInvalidFiles = false;
+        const invalidFiles = [];
+        const validFiles = [];
+        
+        Array.from(fileInput.files).forEach((file, index) => {
+            totalSize += file.size;
+            
+            // Validar tamaño (16MB máximo)
+            const maxSize = 16 * 1024 * 1024; // 16MB
+            const isValidSize = file.size <= maxSize;
+            
+            // Validar extensión - SOLUCIÓN MÁS ROBUSTA
+            const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg', 'txt', 'log', 'pcap', 'gif', 'bmp', 'webp'];
+            const fileName = file.name.toLowerCase();
+            const extension = fileName.split('.').pop();
+            const isValidExtension = allowedExtensions.includes(extension);
+            
+            const isValid = isValidSize && isValidExtension;
+            
+            if (!isValid) {
+                hasInvalidFiles = true;
+                invalidFiles.push({
+                    name: file.name,
+                    reason: !isValidSize ? 'Tamaño excedido (máx 16MB)' : 'Formato no permitido'
+                });
+            } else {
+                validFiles.push(file);
+            }
+            
+            // Determinar icono basado en extensión (más confiable que file.type)
+            let icon = 'bi-file-earmark';
+            let iconColor = 'text-secondary';
+            
+            if (extension === 'pdf') {
+                icon = 'bi-file-pdf';
+                iconColor = 'text-danger';
+            } else if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'].includes(extension)) {
+                icon = 'bi-image';
+                iconColor = 'text-success';
+            } else if (['txt', 'log'].includes(extension)) {
+                icon = 'bi-file-text';
+                iconColor = 'text-primary';
+            } else if (extension === 'pcap') {
+                icon = 'bi-hdd-network';
+                iconColor = 'text-warning';
+            }
+            
+            // Tamaño formateado
+            let sizeText = '';
+            if (file.size < 1024) {
+                sizeText = `${file.size} B`;
+            } else if (file.size < 1024 * 1024) {
+                sizeText = `${(file.size / 1024).toFixed(1)} KB`;
+            } else {
+                sizeText = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+            }
+            
+            const listItem = document.createElement('div');
+            listItem.className = `list-group-item list-group-item-action ${!isValid ? 'list-group-item-danger' : 'list-group-item-light'}`;
+            listItem.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi ${icon} ${iconColor} fs-5 me-3"></i>
+                        <div>
+                            <strong class="${!isValid ? 'text-danger' : ''}">${file.name}</strong>
+                            <div class="text-muted small">
+                                ${sizeText} • ${extension.toUpperCase()}
+                                ${!isValid ? '<span class="badge bg-danger ms-2">Inválido</span>' : '<span class="badge bg-success ms-2">Válido</span>'}
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile(${index})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            fileList.appendChild(listItem);
+        });
+        
+        preview.appendChild(fileList);
+        
+        // Mostrar resumen
+        const summary = document.createElement('div');
+        summary.className = 'alert alert-info mt-3';
+        summary.innerHTML = `
+            <i class="bi bi-info-circle"></i>
+            <strong>Resumen:</strong> ${fileInput.files.length} archivo(s) seleccionado(s)
+            • Válidos: ${validFiles.length}
+            • Inválidos: ${invalidFiles.length}
+            ${totalSize > 0 ? `• Tamaño total: ${formatBytes(totalSize)}` : ''}
+        `;
+        preview.appendChild(summary);
+        
+        // Mostrar archivos inválidos si los hay
+        if (hasInvalidFiles) {
+            const invalidDiv = document.createElement('div');
+            invalidDiv.className = 'alert alert-warning mt-3';
+            invalidDiv.innerHTML = `
+                <h6><i class="bi bi-exclamation-triangle"></i> Archivos con problemas:</h6>
+                <ul class="mb-0 small">
+                    ${invalidFiles.map(f => `<li><strong>${f.name}</strong> - ${f.reason}</li>`).join('')}
+                </ul>
+                <small class="d-block mt-2">Estos archivos no se podrán subir.</small>
+            `;
+            uploadStatus.appendChild(invalidDiv);
+        }
+        
+        // Si hay archivos válidos, mostrar mensaje de confirmación
+        if (validFiles.length > 0) {
+            const validDiv = document.createElement('div');
+            validDiv.className = 'alert alert-success mt-3';
+            validDiv.innerHTML = `
+                <h6><i class="bi bi-check-circle"></i> Archivos listos para subir:</h6>
+                <small>${validFiles.length} archivo(s) válido(s) serán procesados al enviar el formulario.</small>
+            `;
+            uploadStatus.appendChild(validDiv);
+        }
+    }
+    
+    // Formatear bytes a tamaño legible
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Eliminar archivo específico
+    function removeFile(index) {
+        const fileInput = document.getElementById('fileInput');
+        const dataTransfer = new DataTransfer();
+        
+        // Reconstruir la lista de archivos excluyendo el índice
+        Array.from(fileInput.files).forEach((file, i) => {
+            if (i !== index) {
+                dataTransfer.items.add(file);
+            }
+        });
+        
+        fileInput.files = dataTransfer.files;
+        updateFilePreview();
+    }
+    
+    // Validación del formulario
+    document.getElementById('incidenteForm').addEventListener('submit', function(e) {
+        const titulo = document.querySelector('#titulo').value.trim();
+        const descripcion = document.querySelector('#descripcion').value.trim();
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Validar campos requeridos
+        if (!titulo || !descripcion) {
+            e.preventDefault();
+            showAlert('error', 'Por favor complete todos los campos requeridos (Título y Descripción).');
+            return;
+        }
+        
+        // Cambiar texto del botón durante el envío
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Procesando...';
+    });
+    
+    // Mostrar alerta
+    function showAlert(type, message) {
+        // Remover alertas existentes
+        document.querySelectorAll('.floating-alert').forEach(alert => alert.remove());
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show floating-alert`;
+        alertDiv.style.position = 'fixed';
+        alertDiv.style.top = '20px';
+        alertDiv.style.right = '20px';
+        alertDiv.style.zIndex = '9999';
+        alertDiv.style.maxWidth = '400px';
+        alertDiv.innerHTML = `
+            <i class="bi ${type === 'error' ? 'bi-exclamation-triangle' : 'bi-check-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Auto-remover después de 5 segundos
+        setTimeout(() => {
+            if (alertDiv.parentElement) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+    
+    // Inicializar eventos
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('fileInput');
+        
+        fileInput.addEventListener('change', updateFilePreview);
+        
+        // Mostrar vista previa inicial
+        updateFilePreview();
+    });
+</script>
 {% endblock %}

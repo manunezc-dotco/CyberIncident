@@ -1,32 +1,63 @@
 {% extends "base.html" %}
 
+{% block title %}Inicio - CyberIncident{% endblock %}
+
 {% block content %}
-<div class="text-center py-5">
-    <h1 class="display-4 mb-4">
-        <i class="bi bi-shield-shaded text-primary"></i><br>
-        CyberIncident
-    </h1>
-    <p class="lead mb-4">
-        Sistema de Registro y Análisis de Incidentes de Seguridad
-    </p>
-    
-    <div class="row justify-content-center mt-5">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h4>Acciones disponibles:</h4>
-                    <div class="d-grid gap-3 mt-4">
-                        <a href="/incidente/nuevo" class="btn btn-primary btn-lg">
-                            <i class="bi bi-plus-circle"></i> Reportar Nuevo Incidente
-                        </a>
-                        <a href="/incidentes" class="btn btn-outline-secondary btn-lg">
-                            <i class="bi bi-list-ul"></i> Ver Incidentes Registrados
-                        </a>
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-4 mb-4">
+            <i class="bi bi-shield-shaded text-primary"></i><br>
+            CyberIncident
+        </h1>
+        <p class="lead mb-4">
+            Sistema de Registro y Análisis de Incidentes de Seguridad
+        </p>
+        
+        <div class="mt-5">
+            <a href="{{ url_for('nuevo_incidente') }}" class="btn btn-primary btn-lg me-3">
+                <i class="bi bi-plus-circle"></i> Reportar Incidente
+            </a>
+            <a href="{{ url_for('listar_incidentes') }}" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-list-ul"></i> Ver Todos los Incidentes
+            </a>
+        </div>
+        
+        <!-- Estadísticas -->
+        <div class="row mt-5">
+            <div class="col-md-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h5 class="text-primary">Total</h5>
+                        <h3>{{ total }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <h5 class="text-warning">Abiertos</h5>
+                        <h3>{{ abiertos }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-danger">
+                    <div class="card-body text-center">
+                        <h5 class="text-danger">Críticos</h5>
+                        <h3>{{ criticos }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <h5 class="text-success">Resueltos</h5>
+                        <h3>{{ resueltos }}</h3>
                     </div>
                 </div>
             </div>
         </div>
+        
     </div>
 </div>
 {% endblock %}
-

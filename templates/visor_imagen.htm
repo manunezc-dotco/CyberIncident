@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}{{ evidencia.nombre_archivo }} - Visor{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('listar_incidentes') }}">Incidentes</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('detalle_incidente', id=evidencia.incidente_id) }}">Incidente #{{ evidencia.incidente_id }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('galeria_incidente', id=evidencia.incidente_id) }}">Galería</a></li>
+            <li class="breadcrumb-item active">{{ evidencia.nombre_archivo }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        {% if evidencia.tipo_archivo == 'imagen' %}
+                        <i class="bi bi-image"></i> 
+                        {% elif evidencia.nombre_archivo.endswith('.pdf') %}
+                        <i class="bi bi-file-pdf"></i> 
+                        {% elif evidencia.nombre_archivo.endswith('.txt') or evidencia.nombre_archivo.endswith('.log') %}
+                        <i class="bi bi-file-text"></i> 
+                        {% elif evidencia.nombre_archivo.endswith('.pcap') %}
+                        <i class="bi bi-hdd-network"></i> 
+                        {% else %}
+                        <i class="bi bi-file-earmark"></i> 
+                        {% endif %}
+                        {{ evidencia.nombre_archivo }}
+                    </h5>
+                    <div>
+                        <a href="{{ url_for('descargar_evidencia', evidencia_id=evidencia.id) }}" 
+                           download="{{ evidencia.nombre_archivo }}"
+                           class="btn btn-sm btn-outline-light">
+                            <i class="bi bi-download"></i> Descargar
+                        </a>
+                        <a href="{{ url_for('galeria_incidente', id=evidencia.incidente_id) }}"
+                           class="btn btn-sm btn-outline-light ms-2">
+                            <i class="bi bi-grid-3x3-gap"></i> Galería
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="text-center bg-light" style="min-height: 500px;">
+                        {% if evidencia.tipo_archivo == 'imagen' and evidencia.datos_imagen %}
+                        <!-- Vista de imagen -->
+                        <img id="imagenPrincipal" 
+                             src="data:image/jpeg;base64,{{ evidencia.datos_imagen }}" 
+                             alt="{{ evidencia.nombre_archivo }}"
+                             class="img-fluid"
+                             style="max-height: 70vh; cursor: zoom-in;"
+                             onclick="toggleZoom()"
+                             loading="eager">
+                        {% elif evidencia.tipo_archivo == 'imagen' %}
+                        <!-- Imagen sin datos base64 -->
+                        <div class="d-flex flex-column justify-content-center align-items-center h-100 py-5">
+                            <i class="bi bi-image display-1 text-muted"></i>
+                            <p class="mt-3">Vista previa no disponible</p>
+                            <p class="text-muted small">Esta imagen no puede mostrarse directamente</p>
+                            <a href="{{ url_for('descargar_evidencia', evidencia_id=evidencia.id) }}" 
+                               class="btn btn-primary mt-2">
+                                <i class="bi bi-download"></i> Descargar para ver
+                            </a>
+                        </div>
+                        {% elif evidencia.nombre_archivo.endswith('.pdf') %}
+                        <!-- Vista de PDF -->
+                        <div class="d-flex flex-column justify-content-center align-items-center h-100 py-5 bg-danger bg-opacity-10">
+                            <i class="bi bi-file-pdf display-1 text-danger"></i>
+                            <p class="mt-3">Documento PDF</p>
+                            <p class="text-muted small">No se puede previsualizar PDFs en el navegador</p>
+                            <a href="{{ url_for('descargar_evidencia', evidencia_id=evidencia.id) }}" 
+                               class="btn btn-danger mt-2">
+                                <i class="bi bi-download"></i> Descargar PDF
+                            </a>
+                        </div>
+                        {% elif evidencia.nombre_archivo.endswith('.txt') or evidencia.nombre_archivo.endswith('.log') %}
+                        <!-- Vista de texto -->
+                        <div class="d-flex flex-column justify-content-center align-items-center h-100 py-5 bg-info bg-opacity-10">
+                            <i class="bi bi-file-text display-1 text-info"></i>
+                            <p class="mt-3">Archivo de texto</p>
+                            <p class="text-muted small">Contenido: {{ evidencia.nombre_archivo.split('.')[-1]|upper }}</p>
+                            <a href="{{ url_for('descargar_evidencia', evidencia_id=evidencia.id) }}" 
+                               class="btn btn-info mt-2">
+                                <i class="bi bi-download"></i> Descargar archivo
+                            </a>
+                        </div>
+                        {% elif evidencia.nombre_archivo.endswith('.pcap') %}
+                        <!-- Vista de PCAP -->
+                        <div class="d-flex flex-column justify-content-center align-items-center h-100 py-5 bg-warning bg-opacity-10">
+                            <i class="bi bi-hdd-network display-1 text-warning"></i>
+                            <p class="mt-3">Captura de red (PCAP)</p>
+                            <p class="text-muted small">Requiere software especializado para analizar</p>
+                            <a href="{{ url_for('descargar_evidencia', evidencia_id=evidencia.id) }}" 
+                               class="btn btn-warning mt-2">
+                                <i class="bi bi-download"></i> Descargar PCAP
+                            </a>
+                        </div>
+                        {% else %}
+                        <!-- Vista genérica -->
+                        <div class="d-flex flex-column justify-content-center align-items-center h-100 py-5 bg-secondary bg-opacity-10">
+                            <i class="bi bi-file-earmark display-1 text-secondary"></i>
+                            <p class="mt-3">{{ evidencia.nombre_archivo }}</p>
+                            <p class="text-muted small">Tipo: {{ evidencia.tipo_archivo|default('Desconocido', true) }}</p>
+                            <a href="{{ url_for('descargar_evidencia', evidencia_id=evidencia.id) }}" 
+                               class="btn btn-secondary mt-2">
+                                <i class="bi bi-download"></i> Descargar archivo
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if evidencia.tipo_archivo == 'imagen' and evidencia.datos_imagen %}
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="zoomOut()">
+                                <i class="bi bi-zoom-out"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary mx-2" onclick="zoomIn()">
+                                <i class="bi bi-zoom-in"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="resetZoom()">
+                                <i class="bi bi-fullscreen-exit"></i> 100%
+                            </button>
+                        </div>
+                        <div class="text-muted">
+                            <span id="zoomLevel">100%</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-lg-3">
+            <!-- Información del archivo -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Información del Archivo</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Nombre:</span>
+                            <strong class="text-truncate ms-2" title="{{ evidencia.nombre_archivo }}">
+                                {{ evidencia.nombre_archivo }}
+                            </strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Tipo:</span>
+                            <strong>
+                                {% if evidencia.tipo_archivo == 'imagen' %}
+                                <span class="badge bg-success">Imagen</span>
+                                {% else %}
+                                <span class="badge bg-primary">Documento</span>
+                                {% endif %}
+                            </strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Formato:</span>
+                            <strong>{{ evidencia.nombre_archivo.split('.')[-1]|upper }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Incidente:</span>
+                            <strong>#{{ evidencia.incidente_id }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Fecha Subida:</span>
+                            <strong>{{ evidencia.fecha_subida.strftime('%d/%m/%Y %H:%M') }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>ID Evidencia:</span>
+                            <strong>#{{ evidencia.id }}</strong>
+                        </li>
+                        <li class="list-group-item">
+                            <small class="text-muted">
+                                <i class="bi bi-hdd"></i> Almacenamiento local
+                            </small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Herramientas -->
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-tools"></i> Herramientas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if evidencia.tipo_archivo == 'imagen' and evidencia.datos_imagen %}
+                        <button class="btn btn-outline-primary" onclick="rotarIzquierda()">
+                            <i class="bi bi-arrow-counterclockwise"></i> Rotar Izquierda
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="rotarDerecha()">
+                            <i class="bi bi-arrow-clockwise"></i> Rotar Derecha
+                        </button>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-success" onclick="descargarConNombre()">
+                            <i class="bi bi-download"></i> Descargar Archivo
+                        </button>
+                        
+                        {% if evidencia.tipo_archivo == 'imagen' and evidencia.datos_imagen %}
+                        <button class="btn btn-outline-info" onclick="copiarEnlace()">
+                            <i class="bi bi-link"></i> Copiar Enlace
+                        </button>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('detalle_incidente', id=evidencia.incidente_id) }}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver al Incidente
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Vista rápida de incidente -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-dark text-white">
+                    <h6 class="mb-0"><i class="bi bi-clipboard-data"></i> Incidente Relacionado</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Incidente #{{ evidencia.incidente_id }}</strong>
+                    </p>
+                    {% set incidente_rel = evidencia.incidente %}
+                    <small class="d-block mb-1">
+                        <span class="badge bg-{{ 'warning' if incidente_rel.estado == 'Abierto' else 'success' if incidente_rel.estado == 'Resuelto' else 'info' }}">
+                            {{ incidente_rel.estado }}
+                        </span>
+                        <span class="badge bg-{{ 'danger' if incidente_rel.severidad == 'critica' else 'warning' if incidente_rel.severidad == 'alta' else 'primary' if incidente_rel.severidad == 'media' else 'secondary' }}">
+                            {{ incidente_rel.severidad }}
+                        </span>
+                    </small>
+                    <p class="small text-muted mb-0">
+                        {{ incidente_rel.titulo[:80] }}{% if incidente_rel.titulo|length > 80 %}...{% endif %}
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent text-center">
+                    <a href="{{ url_for('detalle_incidente', id=evidencia.incidente_id) }}" 
+                       class="btn btn-sm btn-outline-dark w-100">
+                        <i class="bi bi-eye"></i> Ver Incidente Completo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if evidencia.tipo_archivo == 'imagen' and evidencia.datos_imagen %}
+<script>
+let zoom = 1;
+const zoomStep = 0.25;
+let rotation = 0;
+const imgElement = document.getElementById('imagenPrincipal');
+const zoomLevelElement = document.getElementById('zoomLevel');
+
+function toggleZoom() {
+    if (zoom === 1) {
+        zoomIn();
+    } else {
+        resetZoom();
+    }
+}
+
+function zoomIn() {
+    if (zoom < 3) {
+        zoom += zoomStep;
+        updateZoom();
+    }
+}
+
+function zoomOut() {
+    if (zoom > 0.5) {
+        zoom -= zoomStep;
+        updateZoom();
+    }
+}
+
+function resetZoom() {
+    zoom = 1;
+    rotation = 0;
+    updateZoom();
+    imgElement.style.transform = 'rotate(0deg) scale(1)';
+}
+
+function updateZoom() {
+    imgElement.style.transform = `rotate(${rotation}deg) scale(${zoom})`;
+    imgElement.style.transformOrigin = 'center';
+    imgElement.style.transition = 'transform 0.2s ease';
+    zoomLevelElement.textContent = `${Math.round(zoom * 100)}%`;
+}
+
+function rotarDerecha() {
+    rotation += 90;
+    updateZoom();
+}
+
+function rotarIzquierda() {
+    rotation -= 90;
+    updateZoom();
+}
+
+function descargarConNombre() {
+    const link = document.createElement('a');
+    link.href = "{{ url_for('descargar_evidencia', evidencia_id=evidencia.id) }}";
+    link.download = '{{ evidencia.nombre_archivo }}';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function copiarEnlace() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url)
+        .then(() => {
+            // Mostrar notificación
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = `
+                <i class="bi bi-check-circle"></i> Enlace copiado al portapapeles
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            document.body.appendChild(alert);
+            
+            // Auto-remover después de 3 segundos
+            setTimeout(() => {
+                if (alert.parentElement) {
+                    alert.remove();
+                }
+            }, 3000);
+        })
+        .catch(err => {
+            console.error('Error al copiar: ', err);
+            alert('No se pudo copiar el enlace');
+        });
+}
+
+// Controles con teclado
+document.addEventListener('keydown', (e) => {
+    if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        zoomIn();
+    } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        zoomOut();
+    } else if (e.key === '0') {
+        e.preventDefault();
+        resetZoom();
+    } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        rotarDerecha();
+    } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        rotarIzquierda();
+    } else if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        resetZoom();
+    } else if (e.key === 'd' || e.key === 'D') {
+        if (e.ctrlKey) {
+            e.preventDefault();
+            descargarConNombre();
+        }
+    }
+});
+
+// Inicializar
+updateZoom();
+</script>
+{% else %}
+<script>
+function descargarConNombre() {
+    const link = document.createElement('a');
+    link.href = "{{ url_for('descargar_evidencia', evidencia_id=evidencia.id) }}";
+    link.download = '{{ evidencia.nombre_archivo }}';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function copiarEnlace() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url)
+        .then(() => {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = `
+                <i class="bi bi-check-circle"></i> Enlace copiado al portapapeles
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentElement) {
+                    alert.remove();
+                }
+            }, 3000);
+        })
+        .catch(err => {
+            console.error('Error al copiar: ', err);
+            alert('No se pudo copiar el enlace');
+        });
+}
+</script>
+{% endif %}
+
+<style>
+#imagenPrincipal {
+    transition: transform 0.3s ease;
+    max-width: 100%;
+}
+.card-body {
+    overflow: hidden;
+}
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}

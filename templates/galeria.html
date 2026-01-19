@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Galería - Incidente #{{ incidente.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-images"></i> Evidencias Multimedia</h1>
+            <p class="lead">Incidente #{{ incidente.id }}: {{ incidente.titulo[:50] }}{% if incidente.titulo|length > 50 %}...{% endif %}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('detalle_incidente', id=incidente.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver al Incidente
+            </a>
+        </div>
+    </div>
+    
+    {% if imagenes %}
+    <div class="row" id="galeria">
+        {% for imagen in imagenes %}
+        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-img-top position-relative" style="height: 200px; overflow: hidden;">
+                    {% if imagen.tipo_archivo == 'imagen' and imagen.datos_imagen %}
+                    <!-- Si es imagen y tiene datos base64 -->
+                    <img src="data:image/jpeg;base64,{{ imagen.datos_imagen }}" 
+                         class="img-fluid w-100 h-100 object-fit-cover" 
+                         alt="{{ imagen.nombre_archivo }}"
+                         style="cursor: pointer;"
+                         onclick="abrirVisor({{ imagen.id }})"
+                         loading="lazy">
+                    {% elif imagen.tipo_archivo == 'imagen' %}
+                    <!-- Si es imagen pero no tiene datos base64 (fallback) -->
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 bg-light">
+                        <i class="bi bi-image display-4 text-muted mb-2"></i>
+                        <small class="text-muted">Imagen no disponible para vista previa</small>
+                    </div>
+                    {% elif imagen.nombre_archivo.endswith('.pdf') %}
+                    <!-- Si es PDF -->
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 bg-danger bg-opacity-10">
+                        <i class="bi bi-file-pdf display-4 text-danger mb-2"></i>
+                        <small class="text-muted">Documento PDF</small>
+                    </div>
+                    {% elif imagen.nombre_archivo.endswith('.txt') or imagen.nombre_archivo.endswith('.log') %}
+                    <!-- Si es texto -->
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 bg-info bg-opacity-10">
+                        <i class="bi bi-file-text display-4 text-info mb-2"></i>
+                        <small class="text-muted">Archivo de texto</small>
+                    </div>
+                    {% elif imagen.nombre_archivo.endswith('.pcap') %}
+                    <!-- Si es PCAP -->
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 bg-warning bg-opacity-10">
+                        <i class="bi bi-hdd-network display-4 text-warning mb-2"></i>
+                        <small class="text-muted">Captura de red</small>
+                    </div>
+                    {% else %}
+                    <!-- Otros tipos de archivos -->
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 bg-secondary bg-opacity-10">
+                        <i class="bi bi-file-earmark display-4 text-secondary mb-2"></i>
+                        <small class="text-muted">{{ imagen.tipo_archivo|default('Archivo', true) }}</small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge bg-dark">{{ loop.index }}</span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <h6 class="card-title text-truncate" title="{{ imagen.nombre_archivo }}">
+                        {{ imagen.nombre_archivo }}
+                    </h6>
+                    <small class="text-muted d-block mb-1">
+                        <i class="bi bi-calendar"></i> {{ imagen.fecha_subida.strftime('%d/%m/%Y %H:%M') }}
+                    </small>
+                    <small class="text-muted">
+                        <i class="bi bi-filetype-{{ imagen.nombre_archivo.split('.')[-1] }}"></i>
+                        {{ imagen.nombre_archivo.split('.')[-1]|upper }}
+                        {% if imagen.tipo_archivo %}
+                        • <span class="badge bg-{{ 'success' if imagen.tipo_archivo == 'imagen' else 'info' }}">
+                            {{ imagen.tipo_archivo }}
+                        </span>
+                        {% endif %}
+                    </small>
+                </div>
+                
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <!-- Botón de descarga -->
+                        <a href="{{ url_for('descargar_evidencia', evidencia_id=imagen.id) }}" 
+                           class="btn btn-sm btn-outline-primary"
+                           download="{{ imagen.nombre_archivo }}"
+                           title="Descargar {{ imagen.nombre_archivo }}">
+                            <i class="bi bi-download"></i> Descargar
+                        </a>
+                        
+                        <!-- Botón de vista (solo para imágenes) -->
+                        {% if imagen.tipo_archivo == 'imagen' %}
+                        <button class="btn btn-sm btn-outline-info" 
+                                onclick="abrirVisor({{ imagen.id }})"
+                                title="Ver imagen en tamaño completo">
+                            <i class="bi bi-zoom-in"></i> Ver
+                        </button>
+                        {% else %}
+                        <button class="btn btn-sm btn-outline-secondary" 
+                                onclick="verDetalles({{ imagen.id }})"
+                                title="Ver detalles del archivo">
+                            <i class="bi bi-info-circle"></i> Detalles
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="text-center mt-4">
+        <p class="text-muted">
+            <i class="bi bi-info-circle"></i>
+            Mostrando {{ imagenes|length }} evidencia(s). 
+            Las imágenes pueden verse en tamaño completo, otros archivos solo se pueden descargar.
+        </p>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-folder-x display-1 text-muted"></i>
+        <h3 class="mt-3">No hay evidencias adjuntas</h3>
+        <p class="text-muted">Este incidente no tiene archivos de evidencia adjuntos.</p>
+        <a href="{{ url_for('detalle_incidente', id=incidente.id) }}" class="btn btn-primary mt-2">
+            <i class="bi bi-arrow-left"></i> Volver al Incidente
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal para visor de imágenes -->
+<div class="modal fade" id="visorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white" id="modalTitle"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body d-flex justify-content-center align-items-center">
+                <div id="cargandoImagen" class="text-center">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="text-light mt-3">Cargando imagen...</p>
+                </div>
+                <img id="imagenModal" class="img-fluid" style="display: none; max-height: 85vh;">
+            </div>
+            <div class="modal-footer border-0 justify-content-between">
+                <div>
+                    <a id="descargarBtn" class="btn btn-outline-light" href="#" download>
+                        <i class="bi bi-download"></i> Descargar
+                    </a>
+                </div>
+                <div class="text-center">
+                    <button class="btn btn-outline-light" onclick="rotarImagen(-90)">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </button>
+                    <button class="btn btn-outline-light mx-2" onclick="rotarImagen(90)">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <button class="btn btn-outline-light" onclick="resetImagen()">
+                        <i class="bi bi-arrow-clockwise"></i> Reset
+                    </button>
+                </div>
+                <div>
+                    <span class="text-light" id="infoImagen"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para detalles de archivos no imagen -->
+<div class="modal fade" id="detallesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detallesTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="detallesContenido"></div>
+            </div>
+            <div class="modal-footer">
+                <a id="detallesDescargar" class="btn btn-primary" href="#" download>
+                    <i class="bi bi-download"></i> Descargar
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let anguloRotacion = 0;
+let imagenActual = null;
+let archivoActual = null;
+
+// Función para abrir visor de imágenes
+function abrirVisor(evidenciaId) {
+    // Mostrar modal y cargando
+    const modal = new bootstrap.Modal(document.getElementById('visorModal'));
+    document.getElementById('cargandoImagen').style.display = 'block';
+    document.getElementById('imagenModal').style.display = 'none';
+    
+    // Obtener datos de la imagen
+    fetch(`/api/evidencia/${evidenciaId}`)
+        .then(response => response.json())
+        .then(data => {
+            imagenActual = data;
+            
+            // Configurar modal
+            document.getElementById('modalTitle').textContent = data.nombre_archivo;
+            document.getElementById('infoImagen').textContent = 
+                `Tamaño: ${data.tamano} | Subida: ${data.fecha_subida}`;
+            
+            // Configurar botón de descarga
+            const descargarBtn = document.getElementById('descargarBtn');
+            descargarBtn.href = `/descargar/${evidenciaId}`;
+            descargarBtn.download = data.nombre_archivo;
+            
+            // Intentar cargar la imagen
+            if (data.tiene_imagen) {
+                fetch(`/api/evidencia/${evidenciaId}/imagen`)
+                    .then(response => response.json())
+                    .then(imagenData => {
+                        if (imagenData.imagen_base64) {
+                            const img = document.getElementById('imagenModal');
+                            img.onload = function() {
+                                document.getElementById('cargandoImagen').style.display = 'none';
+                                img.style.display = 'block';
+                                resetImagen();
+                            };
+                            img.src = `data:image/jpeg;base64,${imagenData.imagen_base64}`;
+                        } else {
+                            mostrarError('No se pudo cargar la imagen');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        mostrarError('Error cargando la imagen');
+                    });
+            } else {
+                mostrarError('Este archivo no es una imagen');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarError('Error cargando datos del archivo');
+        });
+    
+    modal.show();
+}
+
+// Función para ver detalles de archivos no imagen
+function verDetalles(evidenciaId) {
+    fetch(`/api/evidencia/${evidenciaId}`)
+        .then(response => response.json())
+        .then(data => {
+            archivoActual = data;
+            
+            // Configurar modal
+            document.getElementById('detallesTitle').textContent = data.nombre_archivo;
+            
+            // Configurar contenido
+            const contenido = document.getElementById('detallesContenido');
+            contenido.innerHTML = `
+                <div class="mb-3">
+                    <strong>Nombre:</strong> ${data.nombre_archivo}
+                </div>
+                <div class="mb-3">
+                    <strong>Tipo:</strong> ${data.tipo_archivo}
+                </div>
+                <div class="mb-3">
+                    <strong>Tamaño:</strong> ${data.tamano}
+                </div>
+                <div class="mb-3">
+                    <strong>Fecha de subida:</strong> ${data.fecha_subida}
+                </div>
+                <div class="mb-3">
+                    <strong>ID de incidente:</strong> #${data.incidente_id}
+                </div>
+            `;
+            
+            // Configurar botón de descarga
+            const descargarBtn = document.getElementById('detallesDescargar');
+            descargarBtn.href = `/descargar/${evidenciaId}`;
+            descargarBtn.download = data.nombre_archivo;
+            
+            // Mostrar modal
+            const modal = new bootstrap.Modal(document.getElementById('detallesModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error cargando detalles del archivo');
+        });
+}
+
+// Funciones para manipulación de imágenes
+function rotarImagen(grados) {
+    anguloRotacion += grados;
+    const img = document.getElementById('imagenModal');
+    img.style.transform = `rotate(${anguloRotacion}deg)`;
+    img.style.transition = 'transform 0.3s ease';
+}
+
+function resetImagen() {
+    anguloRotacion = 0;
+    const img = document.getElementById('imagenModal');
+    img.style.transform = 'rotate(0deg)';
+    img.style.maxHeight = '85vh';
+    img.style.maxWidth = '100%';
+}
+
+function mostrarError(mensaje) {
+    document.getElementById('cargandoImagen').innerHTML = 
+        `<div class="text-center">
+            <i class="bi bi-exclamation-triangle display-4 text-danger"></i>
+            <p class="text-light mt-3">${mensaje}</p>
+            <a href="/descargar/${imagenActual?.id}" class="btn btn-outline-light mt-2">
+                <i class="bi bi-download"></i> Descargar archivo
+            </a>
+        </div>`;
+}
+
+// Navegación con teclado
+document.addEventListener('keydown', (e) => {
+    const modalVisor = document.getElementById('visorModal');
+    const modalDetalles = document.getElementById('detallesModal');
+    
+    if (modalVisor.classList.contains('show')) {
+        if (e.key === 'Escape') {
+            bootstrap.Modal.getInstance(modalVisor).hide();
+        } else if (e.key === 'r' || e.key === 'R') {
+            resetImagen();
+        } else if (e.key === '+' || e.key === '=') {
+            // Zoom in
+            const img = document.getElementById('imagenModal');
+            if (img && img.style.display !== 'none') {
+                const currentHeight = img.clientHeight;
+                img.style.height = (currentHeight * 1.1) + 'px';
+            }
+        } else if (e.key === '-' || e.key === '_') {
+            // Zoom out
+            const img = document.getElementById('imagenModal');
+            if (img && img.style.display !== 'none') {
+                const currentHeight = img.clientHeight;
+                img.style.height = (currentHeight * 0.9) + 'px';
+            }
+        }
+    }
+    
+    if (modalDetalles.classList.contains('show') && e.key === 'Escape') {
+        bootstrap.Modal.getInstance(modalDetalles).hide();
+    }
+});
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar eventos a las tarjetas
+    document.querySelectorAll('.card').forEach((card, index) => {
+        // Guardar índice para navegación
+        card.dataset.index = index;
+        
+        // Encontrar botones y guardar IDs
+        const btnVer = card.querySelector('button[onclick*="abrirVisor"]');
+        const btnDetalles = card.querySelector('button[onclick*="verDetalles"]');
+        
+        if (btnVer) {
+            const match = btnVer.getAttribute('onclick').match(/abrirVisor\((\d+)\)/);
+            if (match) {
+                card.dataset.evidenciaId = match[1];
+            }
+        }
+        
+        if (btnDetalles) {
+            const match = btnDetalles.getAttribute('onclick').match(/verDetalles\((\d+)\)/);
+            if (match) {
+                card.dataset.evidenciaId = match[1];
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

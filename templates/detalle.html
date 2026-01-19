@@ -89,4 +89,100 @@
         </div>
     </div>
 </div>
+
+<!-- Agregar esta sección después de la descripción del incidente -->
+<div class="card shadow mt-4">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-images"></i> Imágenes de Evidencia</h5>
+        {% if incidente.evidencias|selectattr("tipo_archivo", "equalto", "imagen")|list|length > 0 %}
+        <a href="{{ url_for('galeria_incidente', id=incidente.id) }}" class="btn btn-sm btn-outline-light">
+            <i class="bi bi-grid-3x3-gap"></i> Ver Galería
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% set imagenes = incidente.evidencias|selectattr("tipo_archivo", "equalto", "imagen")|list %}
+        {% if imagenes %}
+        <div class="row">
+            {% for imagen in imagenes[:4] %}
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-img-top" style="height: 150px; overflow: hidden;">
+                        {% if imagen.thumbnail_url %}
+                        <img src="{{ imagen.thumbnail_url }}" 
+                             class="img-fluid w-100 h-100 object-fit-cover"
+                             alt="{{ imagen.nombre_archivo }}"
+                             style="cursor: pointer;"
+                             onclick="vistaRapida('{{ imagen.ruta_s3 }}', '{{ imagen.nombre_archivo }}')">
+                        {% else %}
+                        <div class="d-flex justify-content-center align-items-center h-100 bg-light">
+                            <i class="bi bi-image text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-2">
+                        <small class="text-truncate d-block" title="{{ imagen.nombre_archivo }}">
+                            {{ imagen.nombre_archivo }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if imagenes|length > 4 %}
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card h-100 border-dashed">
+                    <a href="{{ url_for('galeria_incidente', id=incidente.id) }}" 
+                       class="d-flex justify-content-center align-items-center h-100 text-decoration-none">
+                        <div class="text-center p-4">
+                            <i class="bi bi-plus-circle display-6 text-muted"></i>
+                            <p class="mt-2 mb-0">Ver {{ imagenes|length - 4 }} más</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-image display-6 text-muted"></i>
+            <p class="mt-3">No hay imágenes adjuntas</p>
+            <small class="text-muted">Puedes subir imágenes en formato PNG, JPG, GIF o WebP</small>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para vista rápida -->
+<div class="modal fade" id="vistaRapidaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vistaRapidaTitulo"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="vistaRapidaImagen" class="img-fluid" style="max-height: 70vh;">
+            </div>
+            <div class="modal-footer">
+                <a id="vistaRapidaDescargar" class="btn btn-primary" download>
+                    <i class="bi bi-download"></i> Descargar
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function vistaRapida(url, nombre) {
+    document.getElementById('vistaRapidaTitulo').textContent = nombre;
+    document.getElementById('vistaRapidaImagen').src = url;
+    document.getElementById('vistaRapidaDescargar').href = url;
+    document.getElementById('vistaRapidaDescargar').download = nombre;
+    
+    const modal = new bootstrap.Modal(document.getElementById('vistaRapidaModal'));
+    modal.show();
+}
+</script>
 {% endblock %}
