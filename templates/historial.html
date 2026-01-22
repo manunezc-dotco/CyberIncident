@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Historial del Sistema{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-3">
+                <i class="bi bi-clock-history text-primary"></i>
+                Historial del Sistema
+            </h1>
+            <p class="text-muted">
+                Registro completo de todas las actividades realizadas en el sistema.
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="card border-primary">
+                <div class="card-body py-2">
+                    <small class="text-muted">Total de registros:</small>
+                    <h4 class="mb-0 text-primary">{{ total }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="bi bi-funnel"></i> Filtros de Búsqueda
+            </h5>
+            <form method="GET" action="{{ url_for('ver_historial_completo') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Tipo de Acción</label>
+                    <select name="accion" class="form-select">
+                        <option value="">Todas las acciones</option>
+                        <option value="CREACION">Creación</option>
+                        <option value="CAMBIO_ESTADO">Cambio de Estado</option>
+                        <option value="COMENTARIO">Comentario</option>
+                        <option value="EVIDENCIA_AGREGADA">Evidencia Agregada</option>
+                        <option value="EVIDENCIA_ELIMINADA">Evidencia Eliminada</option>
+                        <option value="DESCARGA_EVIDENCIA">Descarga de Evidencia</option>
+                        <option value="ELIMINACION">Eliminación</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" name="usuario" class="form-control" placeholder="Filtrar por usuario...">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de historial -->
+    <div class="card">
+        <div class="card-body">
+            {% if historial %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Acción</th>
+                            <th>Incidente</th>
+                            <th>Usuario</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registro in historial %}
+                        <tr>
+                            <td nowrap>
+                                <small class="text-muted">
+                                    {{ registro.fecha.strftime('%d/%m/%Y') }}<br>
+                                    {{ registro.fecha.strftime('%H:%M:%S') }}
+                                </small>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if registro.accion == 'CREACION' %}bg-success
+                                    {% elif registro.accion == 'CAMBIO_ESTADO' %}bg-warning
+                                    {% elif registro.accion == 'ELIMINACION' %}bg-danger
+                                    {% elif registro.accion == 'COMENTARIO' %}bg-info
+                                    {% else %}bg-primary{% endif %}">
+                                    {% if registro.accion == 'CREACION' %}
+                                        <i class="bi bi-plus-circle"></i> Creación
+                                    {% elif registro.accion == 'CAMBIO_ESTADO' %}
+                                        <i class="bi bi-arrow-repeat"></i> Cambio Estado
+                                    {% elif registro.accion == 'COMENTARIO' %}
+                                        <i class="bi bi-chat-left-text"></i> Comentario
+                                    {% elif registro.accion == 'ELIMINACION' %}
+                                        <i class="bi bi-trash"></i> Eliminación
+                                    {% else %}
+                                        {{ registro.accion }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if registro.incidente_titulo %}
+                                <a href="{{ url_for('detalle_incidente', id=registro.incidente_id) }}" 
+                                   class="text-decoration-none">
+                                    #{{ registro.incidente_id }} - {{ registro.incidente_titulo[:30] }}...
+                                </a>
+                                {% else %}
+                                <span class="text-muted">Incidente eliminado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    <i class="bi bi-person-circle"></i>
+                                    {{ registro.usuario }}
+                                </small>
+                            </td>
+                            <td>
+                                <small>{{ registro.descripcion or 'Sin descripción' }}</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            {% if total_pages > 1 %}
+            <nav aria-label="Paginación del historial" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('ver_historial_completo', page=page-1) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for p in range(1, total_pages + 1) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('ver_historial_completo', page=p) }}">{{ p }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('ver_historial_completo', page=page+1) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="bi bi-clock-history display-1 text-muted"></i>
+                </div>
+                <h5 class="text-muted mb-3">No hay registros en el historial</h5>
+                <p class="text-muted">
+                    Las actividades realizadas en el sistema aparecerán aquí.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart"></i> Estadísticas del Historial
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <div class="card border-primary border-2">
+                                <div class="card-body">
+                                    <h1 class="display-6 text-primary" id="totalRegistros">{{ total }}</h1>
+                                    <p class="text-muted mb-0">Total de Registros</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Información:</strong> El historial mantiene un registro permanente de 
+                                todas las actividades realizadas en el sistema, incluyendo creación de incidentes, 
+                                cambios de estado, comentarios, y gestión de evidencias.
+                            </div>
+                            <a href="/api/historial/estadisticas" target="_blank" class="btn btn-outline-primary">
+                                <i class="bi bi-graph-up"></i> Ver Estadísticas Detalladas (API)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

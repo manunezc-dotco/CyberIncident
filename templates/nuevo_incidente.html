@@ -1,324 +1,453 @@
 {% extends "base.html" %}
 
-{% block title %}Nuevo Incidente - CyberIncident{% endblock %}
+{% block title %}Nuevo Incidente{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card shadow">
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow-sm border-0">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Registrar Nuevo Incidente</h4>
+                <h4 class="mb-0">
+                    <i class="bi bi-plus-circle"></i> Reportar Nuevo Incidente
+                </h4>
             </div>
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data" id="incidenteForm">
-                    {{ form.hidden_tag() }}
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-8">
-                            <label class="form-label">Título del Incidente *</label>
-                            {{ form.titulo(class="form-control", placeholder="Ej: Intento de intrusión detectado en servidor web") }}
-                            {% for error in form.titulo.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Usuario que Reporta</label>
-                            {{ form.usuario_reporta(class="form-control", placeholder="Opcional") }}
-                        </div>
-                    </div>
-                    
+                <!-- Mensajes flash -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('crear_incidente') }}" enctype="multipart/form-data" id="incidenteForm">
+                    <!-- Título -->
                     <div class="mb-3">
-                        <label class="form-label">Descripción Detallada *</label>
-                            {{ form.descripcion(class="form-control", rows=5, 
-                                placeholder="Describa el incidente en detalle:\n- Qué sucedió\n- Cuándo ocurrió\n- Impacto estimado\n- Acciones tomadas") }}
-                            {% for error in form.descripcion.errors %}
-                            <div class="text-danger">{{ error }}</div>
-                            {% endfor %}
+                        <label for="titulo" class="form-label">Título del Incidente <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="titulo" name="titulo" 
+                               placeholder="Ej: Intento de phishing detectado en correo corporativo" 
+                               maxlength="200" required>
+                        <div class="form-text">Describe brevemente el incidente (máximo 200 caracteres)</div>
                     </div>
-                    
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Tipo de Incidente *</label>
-                            {{ form.tipo(class="form-select") }}
+
+                    <!-- Descripción -->
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" 
+                                  rows="5" 
+                                  placeholder="Proporciona todos los detalles relevantes sobre el incidente..."
+                                  required></textarea>
+                        <div class="form-text">Describe en detalle qué ocurrió, cuándo, cómo se detectó y los sistemas afectados</div>
+                        <div class="mt-1 text-end">
+                            <small class="text-muted" id="descripcionCounter">0 caracteres</small>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Nivel de Severidad *</label>
-                            {{ form.severidad(class="form-select") }}
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <i class="bi bi-info-circle"></i>
-                                    <strong>Baja:</strong> Impacto mínimo | 
-                                    <strong>Media:</strong> Impacto moderado |
-                                    <strong>Alta:</strong> Impacto significativo |
-                                    <strong>Crítica:</strong> Impacto grave
+                    </div>
+
+                    <div class="row">
+                        <!-- Tipo de Incidente -->
+                        <div class="col-md-6 mb-3">
+                            <label for="tipo" class="form-label">Tipo de Incidente <span class="text-danger">*</span></label>
+                            <select class="form-select" id="tipo" name="tipo" required>
+                                <option value="" selected disabled>Seleccionar tipo...</option>
+                                <option value="phishing">Phishing</option>
+                                <option value="malware">Malware / Ransomware</option>
+                                <option value="intrusion">Intrusión / Acceso No Autorizado</option>
+                                <option value="ddos">Ataque DDoS</option>
+                                <option value="config_error">Error de Configuración</option>
+                                <option value="data_leak">Fuga de Datos</option>
+                                <option value="social_engineering">Ingeniería Social</option>
+                                <option value="insider_threat">Amenaza Interna</option>
+                                <option value="vulnerability">Vulnerabilidad Explotada</option>
+                                <option value="physical">Incidente Físico</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                            <div class="form-text">Selecciona la categoría más apropiada</div>
+                        </div>
+
+                        <!-- Severidad -->
+                        <div class="col-md-6 mb-3">
+                            <label for="severidad" class="form-label">Severidad <span class="text-danger">*</span></label>
+                            <select class="form-select" id="severidad" name="severidad" required>
+                                <option value="" selected disabled>Seleccionar severidad...</option>
+                                <option value="baja">Baja (Impacto mínimo)</option>
+                                <option value="media">Media (Impacto moderado)</option>
+                                <option value="alta">Alta (Impacto significativo)</option>
+                                <option value="critica">Crítica (Impacto grave)</option>
+                            </select>
+                            <div class="form-text">Evalúa el impacto potencial del incidente</div>
+                        </div>
+                    </div>
+
+                    <!-- Usuario que Reporta -->
+                    <div class="mb-3">
+                        <label for="usuario_reporta" class="form-label">Usuario que Reporta</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="usuario_reporta" name="usuario_reporta" 
+                                   placeholder="Tu nombre o identificación" value="{{ session.get('usuario', 'Anónimo') }}">
+                        </div>
+                        <div class="form-text">Deja en blanco si deseas reportar de forma anónima</div>
+                    </div>
+
+                    <!-- Evidencias -->
+                    <div class="mb-4">
+                        <label for="evidencias" class="form-label">Evidencias (opcional)</label>
+                        <input type="file" class="form-control" id="evidencias" name="evidencias" multiple
+                               accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp,.webp,.txt,.log,.pcap,.doc,.docx,.xls,.xlsx,.zip,.rar">
+                        
+                        <!-- Previsualización de archivos -->
+                        <div id="filePreview" class="mt-2" style="display: none;">
+                            <h6 class="mb-2">Archivos seleccionados:</h6>
+                            <div id="fileList" class="list-group"></div>
+                        </div>
+                        
+                        <!-- Información de archivos -->
+                        <div class="mt-2">
+                            <div class="alert alert-info p-2">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <small>
+                                    Formatos permitidos: imágenes (PNG, JPG, GIF, BMP, WEBP), documentos (PDF, DOC, XLS, TXT), 
+                                    archivos de red (PCAP, LOG), comprimidos (ZIP, RAR). Máx 16MB por archivo.
                                 </small>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Evidencias -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0"><i class="bi bi-paperclip"></i> Evidencias (Opcional)</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label">Subir Archivos de Evidencia</label>
-                                <input type="file" class="form-control" name="evidencias" multiple 
-                                       accept=".pdf,.png,.jpg,.jpeg,.txt,.log,.pcap,.gif,.bmp,.webp"
-                                       id="fileInput">
-                                <div class="form-text mt-2">
-                                    <i class="bi bi-info-circle"></i> Formatos permitidos: PDF, PNG, JPG, JPEG, GIF, BMP, WebP, TXT, LOG, PCAP
-                                    (Máximo 16MB por archivo)
-                                </div>
-                            </div>
-                            
-                            <!-- Estado de carga -->
-                            <div id="uploadStatus" class="mt-3"></div>
-                            
-                            <!-- Vista previa simple -->
-                            <div id="filePreview" class="mt-3"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{{ url_for('listar_incidentes') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Cancelar
+
+                    <!-- Botones de acción -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <a href="{{ url_for('listar_incidentes') }}" class="btn btn-outline-secondary me-md-2">
+                            <i class="bi bi-arrow-left"></i> Volver sin guardar
                         </a>
                         <button type="submit" class="btn btn-primary" id="submitBtn">
-                            <i class="bi bi-save"></i> Registrar Incidente
+                            <i class="bi bi-check-circle"></i> Reportar Incidente
                         </button>
                     </div>
                 </form>
             </div>
+            
+            <!-- Información adicional en footer -->
+            <div class="card-footer bg-light">
+                <small class="text-muted">
+                    <i class="bi bi-shield-check"></i> 
+                    Todos los incidentes reportados son confidenciales y se manejan según las políticas de seguridad.
+                </small>
+            </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-    // Función para mostrar vista previa simple y validar
-    function updateFilePreview() {
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('filePreview');
-        const uploadStatus = document.getElementById('uploadStatus');
-        
-        preview.innerHTML = '';
-        uploadStatus.innerHTML = '';
-        
-        if (fileInput.files.length === 0) {
-            preview.innerHTML = `
-                <div class="alert alert-secondary">
-                    <i class="bi bi-info-circle"></i> No hay archivos seleccionados
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Confirmar Reporte</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas reportar este incidente?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle"></i> Una vez reportado, el incidente será revisado por el equipo de seguridad.
                 </div>
-            `;
-            return;
-        }
-        
-        // Mostrar lista de archivos
-        const fileList = document.createElement('div');
-        fileList.className = 'list-group';
-        
-        let totalSize = 0;
-        let hasInvalidFiles = false;
-        const invalidFiles = [];
-        const validFiles = [];
-        
-        Array.from(fileInput.files).forEach((file, index) => {
-            totalSize += file.size;
-            
-            // Validar tamaño (16MB máximo)
-            const maxSize = 16 * 1024 * 1024; // 16MB
-            const isValidSize = file.size <= maxSize;
-            
-            // Validar extensión - SOLUCIÓN MÁS ROBUSTA
-            const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg', 'txt', 'log', 'pcap', 'gif', 'bmp', 'webp'];
-            const fileName = file.name.toLowerCase();
-            const extension = fileName.split('.').pop();
-            const isValidExtension = allowedExtensions.includes(extension);
-            
-            const isValid = isValidSize && isValidExtension;
-            
-            if (!isValid) {
-                hasInvalidFiles = true;
-                invalidFiles.push({
-                    name: file.name,
-                    reason: !isValidSize ? 'Tamaño excedido (máx 16MB)' : 'Formato no permitido'
-                });
-            } else {
-                validFiles.push(file);
-            }
-            
-            // Determinar icono basado en extensión (más confiable que file.type)
-            let icon = 'bi-file-earmark';
-            let iconColor = 'text-secondary';
-            
-            if (extension === 'pdf') {
-                icon = 'bi-file-pdf';
-                iconColor = 'text-danger';
-            } else if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'].includes(extension)) {
-                icon = 'bi-image';
-                iconColor = 'text-success';
-            } else if (['txt', 'log'].includes(extension)) {
-                icon = 'bi-file-text';
-                iconColor = 'text-primary';
-            } else if (extension === 'pcap') {
-                icon = 'bi-hdd-network';
-                iconColor = 'text-warning';
-            }
-            
-            // Tamaño formateado
-            let sizeText = '';
-            if (file.size < 1024) {
-                sizeText = `${file.size} B`;
-            } else if (file.size < 1024 * 1024) {
-                sizeText = `${(file.size / 1024).toFixed(1)} KB`;
-            } else {
-                sizeText = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
-            }
-            
-            const listItem = document.createElement('div');
-            listItem.className = `list-group-item list-group-item-action ${!isValid ? 'list-group-item-danger' : 'list-group-item-light'}`;
-            listItem.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <i class="bi ${icon} ${iconColor} fs-5 me-3"></i>
-                        <div>
-                            <strong class="${!isValid ? 'text-danger' : ''}">${file.name}</strong>
-                            <div class="text-muted small">
-                                ${sizeText} • ${extension.toUpperCase()}
-                                ${!isValid ? '<span class="badge bg-danger ms-2">Inválido</span>' : '<span class="badge bg-success ms-2">Válido</span>'}
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile(${index})">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-            `;
-            fileList.appendChild(listItem);
-        });
-        
-        preview.appendChild(fileList);
-        
-        // Mostrar resumen
-        const summary = document.createElement('div');
-        summary.className = 'alert alert-info mt-3';
-        summary.innerHTML = `
-            <i class="bi bi-info-circle"></i>
-            <strong>Resumen:</strong> ${fileInput.files.length} archivo(s) seleccionado(s)
-            • Válidos: ${validFiles.length}
-            • Inválidos: ${invalidFiles.length}
-            ${totalSize > 0 ? `• Tamaño total: ${formatBytes(totalSize)}` : ''}
-        `;
-        preview.appendChild(summary);
-        
-        // Mostrar archivos inválidos si los hay
-        if (hasInvalidFiles) {
-            const invalidDiv = document.createElement('div');
-            invalidDiv.className = 'alert alert-warning mt-3';
-            invalidDiv.innerHTML = `
-                <h6><i class="bi bi-exclamation-triangle"></i> Archivos con problemas:</h6>
-                <ul class="mb-0 small">
-                    ${invalidFiles.map(f => `<li><strong>${f.name}</strong> - ${f.reason}</li>`).join('')}
-                </ul>
-                <small class="d-block mt-2">Estos archivos no se podrán subir.</small>
-            `;
-            uploadStatus.appendChild(invalidDiv);
-        }
-        
-        // Si hay archivos válidos, mostrar mensaje de confirmación
-        if (validFiles.length > 0) {
-            const validDiv = document.createElement('div');
-            validDiv.className = 'alert alert-success mt-3';
-            validDiv.innerHTML = `
-                <h6><i class="bi bi-check-circle"></i> Archivos listos para subir:</h6>
-                <small>${validFiles.length} archivo(s) válido(s) serán procesados al enviar el formulario.</small>
-            `;
-            uploadStatus.appendChild(validDiv);
-        }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Revisar</button>
+                <button type="button" class="btn btn-primary" id="confirmSubmit">Sí, Reportar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos para la lista de archivos */
+.file-item {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-size {
+    font-size: 0.85em;
+    color: #6c757d;
+    margin-left: 10px;
+}
+
+.file-remove {
+    color: #dc3545;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+/* Estilos para campos obligatorios */
+.form-label .text-danger {
+    font-weight: bold;
+}
+
+/* Animación para botón de envío */
+#submitBtn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Estilos para la tarjeta */
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .col-md-8.offset-md-2 {
+        padding: 0;
     }
     
-    // Formatear bytes a tamaño legible
-    function formatBytes(bytes) {
+    .d-md-flex {
+        flex-direction: column;
+    }
+    
+    .me-md-2 {
+        margin-right: 0 !important;
+        margin-bottom: 10px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del DOM
+    const form = document.getElementById('incidenteForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const descripcionTextarea = document.getElementById('descripcion');
+    const descripcionCounter = document.getElementById('descripcionCounter');
+    const fileInput = document.getElementById('evidencias');
+    const filePreview = document.getElementById('filePreview');
+    const fileList = document.getElementById('fileList');
+    const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+    const confirmSubmitBtn = document.getElementById('confirmSubmit');
+
+    // Contador de caracteres para descripción
+    if (descripcionTextarea && descripcionCounter) {
+        descripcionTextarea.addEventListener('input', function() {
+            const length = this.value.length;
+            descripcionCounter.textContent = `${length} caracteres`;
+            
+            // Cambiar color según la longitud
+            if (length > 1000) {
+                descripcionCounter.style.color = '#dc3545';
+            } else if (length > 500) {
+                descripcionCounter.style.color = '#ffc107';
+            } else {
+                descripcionCounter.style.color = '#6c757d';
+            }
+        });
+        
+        // Inicializar contador
+        descripcionTextarea.dispatchEvent(new Event('input'));
+    }
+
+    // Manejo de archivos seleccionados
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            fileList.innerHTML = '';
+            
+            if (this.files.length > 0) {
+                filePreview.style.display = 'block';
+                
+                let totalSize = 0;
+                const maxSize = 16 * 1024 * 1024; // 16MB
+                
+                for (let i = 0; i < this.files.length; i++) {
+                    const file = this.files[i];
+                    totalSize += file.size;
+                    
+                    // Crear elemento para mostrar el archivo
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <div class="file-name">
+                            <i class="bi bi-file-earmark me-2"></i>
+                            ${file.name}
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="file-size">${formatFileSize(file.size)}</span>
+                            <span class="file-remove" data-index="${i}">
+                                <i class="bi bi-x-circle"></i>
+                            </span>
+                        </div>
+                    `;
+                    
+                    fileList.appendChild(fileItem);
+                }
+                
+                // Mostrar tamaño total
+                const totalSizeElement = document.createElement('div');
+                totalSizeElement.className = 'mt-2 text-end';
+                totalSizeElement.innerHTML = `
+                    <small class="text-muted">
+                        Total: ${formatFileSize(totalSize)} 
+                        ${totalSize > maxSize ? '<span class="text-danger">(Excede límite)</span>' : ''}
+                    </small>
+                `;
+                fileList.appendChild(totalSizeElement);
+                
+                // Validar tamaño total
+                if (totalSize > maxSize) {
+                    submitBtn.disabled = true;
+                    submitBtn.title = 'El tamaño total de los archivos excede 16MB';
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.title = '';
+                }
+                
+                // Agregar event listeners para eliminar archivos
+                document.querySelectorAll('.file-remove').forEach(removeBtn => {
+                    removeBtn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        removeFileFromInput(index);
+                    });
+                });
+                
+            } else {
+                filePreview.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+    }
+
+    // Función para remover archivo del input
+    function removeFileFromInput(index) {
+        const dt = new DataTransfer();
+        const files = fileInput.files;
+        
+        for (let i = 0; i < files.length; i++) {
+            if (i !== index) {
+                dt.items.add(files[i]);
+            }
+        }
+        
+        fileInput.files = dt.files;
+        fileInput.dispatchEvent(new Event('change'));
+    }
+
+    // Función para formatear tamaño de archivo
+    function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
+        
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
-    
-    // Eliminar archivo específico
-    function removeFile(index) {
-        const fileInput = document.getElementById('fileInput');
-        const dataTransfer = new DataTransfer();
-        
-        // Reconstruir la lista de archivos excluyendo el índice
-        Array.from(fileInput.files).forEach((file, i) => {
-            if (i !== index) {
-                dataTransfer.items.add(file);
+
+    // Validación del formulario antes de enviar
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validar campos requeridos
+            const titulo = document.getElementById('titulo').value.trim();
+            const descripcion = document.getElementById('descripcion').value.trim();
+            const tipo = document.getElementById('tipo').value;
+            const severidad = document.getElementById('severidad').value;
+            
+            let isValid = true;
+            let errorMessage = '';
+            
+            if (!titulo) {
+                isValid = false;
+                errorMessage = 'El título es requerido';
+            } else if (titulo.length > 200) {
+                isValid = false;
+                errorMessage = 'El título no puede exceder 200 caracteres';
+            } else if (!descripcion) {
+                isValid = false;
+                errorMessage = 'La descripción es requerida';
+            } else if (!tipo) {
+                isValid = false;
+                errorMessage = 'Debe seleccionar un tipo de incidente';
+            } else if (!severidad) {
+                isValid = false;
+                errorMessage = 'Debe seleccionar una severidad';
+            }
+            
+            if (!isValid) {
+                alert(`Error: ${errorMessage}`);
+                return false;
+            }
+            
+            // Mostrar modal de confirmación
+            confirmationModal.show();
+        });
+    }
+
+    // Confirmar envío del formulario
+    if (confirmSubmitBtn) {
+        confirmSubmitBtn.addEventListener('click', function() {
+            // Mostrar indicador de carga
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Procesando...';
+            
+            // Enviar formulario
+            form.submit();
+        });
+    }
+
+    // Prevenir envío con Enter en campos de texto (excepto textarea)
+    form.querySelectorAll('input[type="text"]').forEach(input => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
             }
         });
-        
-        fileInput.files = dataTransfer.files;
-        updateFilePreview();
-    }
-    
-    // Validación del formulario
-    document.getElementById('incidenteForm').addEventListener('submit', function(e) {
-        const titulo = document.querySelector('#titulo').value.trim();
-        const descripcion = document.querySelector('#descripcion').value.trim();
-        const submitBtn = document.getElementById('submitBtn');
-        
-        // Validar campos requeridos
-        if (!titulo || !descripcion) {
-            e.preventDefault();
-            showAlert('error', 'Por favor complete todos los campos requeridos (Título y Descripción).');
-            return;
-        }
-        
-        // Cambiar texto del botón durante el envío
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Procesando...';
     });
+
+    // Sugerencias según el tipo seleccionado
+    const tipoSelect = document.getElementById('tipo');
+    const descripcionField = document.getElementById('descripcion');
     
-    // Mostrar alerta
-    function showAlert(type, message) {
-        // Remover alertas existentes
-        document.querySelectorAll('.floating-alert').forEach(alert => alert.remove());
-        
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show floating-alert`;
-        alertDiv.style.position = 'fixed';
-        alertDiv.style.top = '20px';
-        alertDiv.style.right = '20px';
-        alertDiv.style.zIndex = '9999';
-        alertDiv.style.maxWidth = '400px';
-        alertDiv.innerHTML = `
-            <i class="bi ${type === 'error' ? 'bi-exclamation-triangle' : 'bi-check-circle'} me-2"></i>
-            ${message}
-            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
-        `;
-        
-        document.body.appendChild(alertDiv);
-        
-        // Auto-remover después de 5 segundos
-        setTimeout(() => {
-            if (alertDiv.parentElement) {
-                alertDiv.remove();
+    if (tipoSelect && descripcionField) {
+        tipoSelect.addEventListener('change', function() {
+            const sugerencias = {
+                'phishing': 'Incluir: Correo electrónico sospechoso, enlaces maliciosos, archivos adjuntos, dirección del remitente, momento del incidente.',
+                'malware': 'Incluir: Nombre del malware si se conoce, sistema afectado, síntomas observados, origen de la infección, acciones tomadas.',
+                'intrusion': 'Incluir: Fecha y hora del acceso, sistemas afectados, credenciales comprometidas, indicadores de compromiso, origen del ataque.',
+                'ddos': 'Incluir: Tipo de ataque, servicios afectados, duración, volumen de tráfico, direcciones IP atacantes.',
+                'config_error': 'Incluir: Sistema/configuración afectada, impacto, momento del descubrimiento, cambios recientes realizados.',
+                'data_leak': 'Incluir: Tipo de datos expuestos, cantidad estimada, cómo se descubrió, sistemas afectados, posibles receptores.',
+                'social_engineering': 'Incluir: Técnica utilizada, información obtenida, empleado/s afectado/s, momento del incidente.',
+                'insider_threat': 'Incluir: Persona involucrada, acciones realizadas, sistemas afectados, información comprometida, momento del incidente.',
+                'vulnerability': 'Incluir: Vulnerabilidad específica, sistema afectado, nivel de exposición, posibles explotaciones.',
+                'physical': 'Incluir: Ubicación física, tipo de incidente, personas involucradas, daños materiales, momento del incidente.',
+                'otro': 'Proporcionar todos los detalles relevantes sobre el incidente.'
+            };
+            
+            const sugerencia = sugerencias[this.value];
+            if (sugerencia) {
+                descripcionField.placeholder = `Ejemplo de información a incluir:\n${sugerencia}`;
             }
-        }, 5000);
+        });
     }
-    
-    // Inicializar eventos
-    document.addEventListener('DOMContentLoaded', function() {
-        const fileInput = document.getElementById('fileInput');
-        
-        fileInput.addEventListener('change', updateFilePreview);
-        
-        // Mostrar vista previa inicial
-        updateFilePreview();
-    });
+});
 </script>
 {% endblock %}
