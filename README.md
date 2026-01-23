@@ -364,8 +364,8 @@ Solución:
 Figura 3: Configuración del Security Group asociado
 
 Estructura de la base de datos
-<img width="498" height="498" alt="image" src="https://github.com/user-attachments/assets/a1f473fe-3985-4ba7-bade-0b0f14500699" />
 
+<img width="800" height="498" alt="image" src="https://github.com/user-attachments/assets/a1f473fe-3985-4ba7-bade-0b0f14500699" />
 
 <img width="1890" height="736" alt="image" src="https://github.com/user-attachments/assets/4bd370bb-311a-4875-9548-be537f0b9f38" />
 
