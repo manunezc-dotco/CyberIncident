@@ -1,16 +1,22 @@
-# Documentación del Sistema CyberIncident
+Documentación del Sistema CyberIncident
 
-## Sistema de Gestión de Incidentes de Seguridad en AWS
+Sistema de Gestión de Incidentes de Seguridad en AWS
 
-### Contexto del Proyecto
+---
+
+1. Introducción y Contexto
+
+1.1 Contexto del Proyecto
 
 Las organizaciones actuales enfrentan un aumento constante de amenazas de seguridad informática. La gestión adecuada de incidentes es esencial para proteger la información de las empresas. CyberIncident es un sistema desarrollado para gestionar incidentes de seguridad utilizando servicios de Amazon Web Services (AWS), aprovechando las ventajas de la computación en la nube.
 
-### Objetivo General
+1.2 Objetivos del Sistema
+
+Objetivo General
 
 Implementar un sistema de información en la nube llamado CyberIncident para el registro, clasificación y análisis de incidentes de seguridad, utilizando servicios básicos de AWS con buenas prácticas de configuración y seguridad.
 
-### Objetivos Específicos
+Objetivos Específicos
 
 1. Desplegar una aplicación backend en una instancia EC2 con sistema operativo Linux
 2. Utilizar una base de datos para almacenar información estructurada de incidentes
@@ -18,233 +24,148 @@ Implementar un sistema de información en la nube llamado CyberIncident para el 
 4. Integrar los servicios EC2, base de datos y S3 en una arquitectura básica
 5. Documentar el proceso de despliegue y funcionamiento del sistema
 
-### Descripción del Sistema
+---
+
+2. Descripción del Sistema
+
+2.1 Funcionalidades Principales
 
 CyberIncident es una aplicación web que permite:
-- Registrar incidentes de seguridad informática
-- Clasificar incidentes por tipo, severidad y estado
-- Adjuntar evidencias técnicas como logs, imágenes o documentos
-- Consultar el historial de incidentes registrados
-- Generar reportes y estadísticas
 
-### Arquitectura del Sistema
+· Registrar incidentes de seguridad informática
+· Clasificar incidentes por tipo, severidad y estado
+· Adjuntar evidencias técnicas como logs, imágenes o documentos
+· Consultar el historial de incidentes registrados
+· Generar reportes y estadísticas
+
+2.2 Arquitectura del Sistema
 
 La arquitectura utiliza los siguientes servicios de AWS:
 
-1. **Amazon EC2**: Instancia Linux que aloja la aplicación Flask
-2. **Base de Datos**: Motor MySQL para almacenar información de incidentes
-3. **Amazon S3**: Servicio de almacenamiento para evidencias
-4. **VPC**: Red virtual para conectar los componentes
-5. **Security Groups**: Control de acceso a los servicios
+1. Amazon EC2: Instancia Linux que aloja la aplicación Flask
+2. Base de Datos: Motor MySQL para almacenar información de incidentes
+3. Amazon S3: Servicio de almacenamiento para evidencias
+4. VPC: Red virtual para conectar los componentes
+5. Security Groups: Control de acceso a los servicios
 
-### Componentes Técnicos
+2.3 Flujo de Datos
 
-#### Backend (Flask Application)
-- Framework: Flask (Python)
-- Base de datos: MySQL
-- Almacenamiento: AWS S3
-- Autenticación: Sistema básico de sesiones
+1. Registro de Incidente
+   · Usuario completa formulario
+   · Aplicación valida datos
+   · Se guarda en base de datos
+   · Se registra en historial
+2. Subida de Evidencias
+   · Usuario selecciona archivo
+   · Aplicación valida tipo y tamaño
+   · Archivo se sube a S3
+   · Se guardan metadatos en base de datos
+   · Se crea backup local
+3. Consulta de Información
+   · Aplicación consulta base de datos
+   · Recupera información de incidentes
+   · Genera URLs para acceder a evidencias
+   · Presenta datos en interfaz web
 
-#### Frontend
-- Templates: HTML con Jinja2
-- Estilos: Bootstrap 5
-- JavaScript: Funcionalidades básicas
+---
 
-#### Base de Datos
+3. Componentes Técnicos
+
+3.1 Backend (Flask Application)
+
+· Framework: Flask (Python)
+· Base de datos: MySQL
+· Almacenamiento: AWS S3
+· Autenticación: Sistema básico de sesiones
+
+3.2 Frontend
+
+· Templates: HTML con Jinja2
+· Estilos: Bootstrap 5
+· JavaScript: Funcionalidades básicas
+
+3.3 Base de Datos
+
 Tablas principales:
-- incidentes: Información de cada incidente
-- evidencias: Archivos adjuntos a incidentes
-- historial: Registro de actividades del sistema
 
-#### AWS S3
-- Bucket: cyberincident
-- Estructura: evidencias/{incidente_id}/
-- Configuración: Acceso privado, encriptación SSE-S3
+· incidentes: Información de cada incidente
+· evidencias: Archivos adjuntos a incidentes
+· historial: Registro de actividades del sistema
 
-### Configuración de Seguridad
+3.4 AWS S3
 
-#### EC2 Security Group
-- Puerto 22 (SSH): Solo desde IP específica
-- Puerto 5000 (HTTP): Acceso público
-- Puerto 3306 (MySQL): Solo desde EC2
+· Bucket: cyberincident
+· Estructura: evidencias/{incidente_id}/
+· Configuración: Acceso privado, encriptación SSE-S3
 
-#### RDS Security Group
-- Puerto 3306: Solo acceso desde EC2 Security Group
+---
 
-#### S3 Policies
-- Bloqueo de acceso público
-- Políticas IAM restrictivas
-- Encriptación automática
+4. Configuración de Seguridad
 
-#### Seguridad en la Aplicación
-- Sanitización de inputs
-- Validación de archivos
-- Protección contra XSS
-- Límites de tamaño de archivo
+4.1 EC2 Security Group
 
-### Flujo de Datos
+· Puerto 22 (SSH): Solo desde IP específica
+· Puerto 5000 (HTTP): Acceso público
+· Puerto 3306 (MySQL): Solo desde EC2
 
-1. **Registro de Incidente**
-   - Usuario completa formulario
-   - Aplicación valida datos
-   - Se guarda en base de datos
-   - Se registra en historial
+4.2 RDS Security Group
 
-2. **Subida de Evidencias**
-   - Usuario selecciona archivo
-   - Aplicación valida tipo y tamaño
-   - Archivo se sube a S3
-   - Se guardan metadatos en base de datos
-   - Se crea backup local
+· Puerto 3306: Solo acceso desde EC2 Security Group
 
-3. **Consulta de Información**
-   - Aplicación consulta base de datos
-   - Recupera información de incidentes
-   - Genera URLs para acceder a evidencias
-   - Presenta datos en interfaz web
+4.3 S3 Policies
 
-### Proceso de Despliegue
+· Bloqueo de acceso público
+· Políticas IAM restrictivas
+· Encriptación automática
 
-#### Paso 1: Configuración de AWS
+4.4 Seguridad en la Aplicación
+
+· Sanitización de inputs
+· Validación de archivos
+· Protección contra XSS
+· Límites de tamaño de archivo
+
+---
+
+5. Proceso de Despliegue
+
+5.1 Paso 1: Configuración de AWS
+
 1. Crear VPC y subredes
 2. Configurar Internet Gateway
 3. Crear Security Groups
 
-#### Paso 2: Despliegue de RDS
+5.2 Paso 2: Despliegue de RDS
+
 1. Crear instancia MySQL
 2. Configurar parámetros de seguridad
 3. Establecer credenciales
 
-#### Paso 3: Configuración de S3
+5.3 Paso 3: Configuración de S3
+
 1. Crear bucket
 2. Configurar políticas de acceso
 3. Establecer configuración de encriptación
 
-#### Paso 4: Despliegue de EC2
+5.4 Paso 4: Despliegue de EC2
+
 1. Lanzar instancia Ubuntu
 2. Configurar Security Group
 3. Instalar dependencias
 4. Desplegar aplicación
 
-#### Paso 5: Configuración de Aplicación
+5.5 Paso 5: Configuración de Aplicación
+
 1. Configurar conexión a base de datos
 2. Establecer credenciales AWS
 3. Configurar parámetros de seguridad
 4. Iniciar servicio
 
-Evidencias de Uso y Funcionamiento del Sistema
+---
 
-Este apartado tiene como finalidad demostrar, mediante capturas de pantalla y registros técnicos, el uso efectivo de los servicios de Amazon Web Services y el correcto funcionamiento del sistema CyberIncident.
+6. Scripts y Configuraciones
 
-1. Evidencias de Amazon EC2
-
-En esta sección se deben incluir pruebas de que la instancia EC2 fue creada, configurada y utilizada para alojar la aplicación.
-
-Evidencias sugeridas:
-
-Estado de la instancia EC2 en ejecución (Running).
-
-Detalles generales de la instancia (ID, tipo, región, sistema operativo).
-
-Configuración del Security Group asociado.
-
-Conexión exitosa por SSH desde un cliente local.
-
-Acceso a la aplicación web mediante la IP pública o DNS.
-
-Descripción ejemplo:
-
-La figura X muestra la instancia EC2 en estado operativo, la cual aloja la aplicación backend desarrollada en Flask.
-
-2. Evidencias de la Base de Datos (RDS / MySQL)
-
-Esta sección demuestra el uso de la base de datos como almacenamiento persistente de información.
-
-Evidencias sugeridas:
-
-Estado de la instancia RDS como disponible.
-
-Endpoint de conexión configurado.
-
-Conexión exitosa desde la instancia EC2.
-
-Ejecución de consultas SQL que evidencien datos almacenados.
-
-Descripción ejemplo:
-
-En la figura X se evidencia la conexión exitosa a la base de datos MySQL alojada en Amazon RDS y la persistencia de información de incidentes.
-
-3. Evidencias de Amazon S3
-
-Aquí se demuestra el uso de S3 como repositorio de evidencias digitales.
-
-Evidencias sugeridas:
-
-Bucket cyberincident creado.
-
-Estructura de carpetas evidencias/{incidente_id}/.
-
-Archivos cargados (capturas, documentos, logs).
-
-Configuración de bloqueo de acceso público.
-
-Encriptación habilitada en el bucket.
-
-Descripción ejemplo:
-
-La figura X muestra el uso de Amazon S3 para el almacenamiento seguro de evidencias asociadas a incidentes de seguridad.
-
-4. Evidencias del Funcionamiento de la Aplicación
-
-En esta sección se presentan pruebas del uso del sistema desde la interfaz de usuario.
-
-Evidencias sugeridas:
-
-Formulario de registro de incidentes.
-
-Incidentes creados correctamente.
-
-Subida de evidencias desde la aplicación.
-
-Consulta del historial de incidentes.
-
-Registros de logs del sistema.
-
-Descripción ejemplo:
-
-La figura X evidencia el registro y la consulta de incidentes de seguridad a través de la aplicación CyberIncident.
-
-5. Evidencias de Integración entre Servicios AWS
-
-Esta sección es clave para demostrar que los servicios trabajan de forma integrada.
-
-Evidencias sugeridas:
-
-EC2 accediendo a RDS.
-
-EC2 subiendo archivos a S3.
-
-Registros en la base de datos con referencias a objetos almacenados en S3.
-
-Descripción ejemplo:
-
-Las evidencias presentadas confirman la correcta integración entre EC2, RDS y S3 dentro de la arquitectura propuesta.
-
-6. Anexo D: Evidencias Gráficas (Opcional)
-
-Se recomienda incluir un anexo exclusivo para capturas de pantalla.
-
-Ejemplo de estructura:
-
-Figura 1. Instancia EC2 en ejecución.
-
-Figura 2. Conexión a la base de datos RDS.
-
-Figura 3. Bucket S3 con evidencias almacenadas.
-
-Figura 4. Registro de incidente en la aplicación.
-
-### Script de Inicialización EC2
+6.1 Script de Inicialización EC2
 
 ```bash
 #!/bin/bash
@@ -304,7 +225,7 @@ systemctl start cyberincident
 systemctl enable cyberincident
 ```
 
-### Configuración de la Aplicación
+6.2 Configuración de la Aplicación
 
 ```python
 # config.py
@@ -328,7 +249,7 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
 ```
 
-### Estructura de Base de Datos
+6.3 Estructura de Base de Datos
 
 ```sql
 -- Tabla de incidentes
@@ -369,9 +290,11 @@ CREATE TABLE historial (
 );
 ```
 
-### Verificación del Sistema
+---
 
-#### Comandos de Verificación
+7. Verificación y Monitoreo
+
+7.1 Comandos de Verificación
 
 ```bash
 # Verificar conexión a RDS
@@ -388,7 +311,7 @@ journalctl -u cyberincident -f
 tail -f /var/log/nginx/access.log
 ```
 
-#### Monitoreo de Recursos
+7.2 Monitoreo de Recursos
 
 ```bash
 # Uso de CPU y memoria
@@ -401,32 +324,83 @@ df -h
 netstat -tulpn
 ```
 
-### Solución de Problemas
+---
 
-#### Problema: Conexión a base de datos fallida
+8. Solución de Problemas
+
+8.1 Problema: Conexión a base de datos fallida
+
 Solución:
+
 1. Verificar Security Groups
 2. Confirmar que RDS está disponible
 3. Verificar credenciales
 4. Probar conexión desde EC2
 
-#### Problema: Aplicación no responde
+8.2 Problema: Aplicación no responde
+
 Solución:
+
 1. Verificar estado del servicio
 2. Revisar logs de error
 3. Confirmar que puertos están abiertos
 4. Reiniciar servicios
 
-#### Problema: Archivos no se suben a S3
+8.3 Problema: Archivos no se suben a S3
+
 Solución:
+
 1. Verificar credenciales AWS
 2. Confirmar permisos del bucket
 3. Verificar tamaño de archivo
 4. Revisar tipos de archivo permitidos
 
-### Anexos
+---
 
-#### Anexo A: Comandos AWS CLI Utilizados
+9. Evidencias del Sistema (Espacio para imágenes)
+
+9.1 Evidencias de Amazon EC2
+
+Figura 1: Estado de la instancia EC2 en ejecución (Running)
+Figura 2: Detalles generales de la instancia (ID, tipo, región, sistema operativo)
+Figura 3: Configuración del Security Group asociado
+Figura 4: Conexión exitosa por SSH desde un cliente local
+Figura 5: Acceso a la aplicación web mediante la IP pública o DNS
+
+9.2 Evidencias de la Base de Datos (RDS / MySQL)
+
+Figura 6: Estado de la instancia RDS como disponible
+Figura 7: Endpoint de conexión configurado
+Figura 8: Conexión exitosa desde la instancia EC2
+Figura 9: Ejecución de consultas SQL que evidencien datos almacenados
+
+9.3 Evidencias de Amazon S3
+
+Figura 10: Bucket cyberincident creado
+Figura 11: Estructura de carpetas evidencias/{incidente_id}/
+Figura 12: Archivos cargados (capturas, documentos, logs)
+Figura 13: Configuración de bloqueo de acceso público
+Figura 14: Encriptación habilitada en el bucket
+
+9.4 Evidencias del Funcionamiento de la Aplicación
+
+Figura 15: Formulario de registro de incidentes
+Figura 16: Incidentes creados correctamente
+Figura 17: Subida de evidencias desde la aplicación
+Figura 18: Consulta del historial de incidentes
+Figura 19: Registros de logs del sistema
+
+9.5 Evidencias de Integración entre Servicios AWS
+
+Figura 20: EC2 accediendo a RDS
+Figura 21: EC2 subiendo archivos a S3
+Figura 22: Registros en la base de datos con referencias a objetos almacenados en S3
+
+---
+
+10. Anexos
+
+Anexo A: Comandos AWS CLI Utilizados
 
 ```bash
 # EC2
@@ -444,7 +418,7 @@ aws s3api put-public-access-block
 aws s3 ls
 ```
 
-#### Anexo B: Estructura del Proyecto
+Anexo B: Estructura del Proyecto
 
 ```
 cyberincident/
@@ -466,7 +440,7 @@ cyberincident/
 └── README.md
 ```
 
-#### Anexo C: Referencias Técnicas
+Anexo C: Referencias Técnicas
 
 1. Documentación oficial AWS
 2. Flask Documentation
@@ -476,10 +450,11 @@ cyberincident/
 
 ---
 
-**Documentación elaborada por:** Maik  
-**Fecha:** Enero 2026  
-**Versión:** 1.0  
-**Estado:** Completada
+11. Información del Documento
 
-<img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/9aa65e82-21f0-4d7b-b57b-daf6e8759a4b" />
+Documentación elaborada por: Maik
+Fecha: Enero 2026
+Versión: 1.0
+Estado: Completada
 
+https://github.com/user-attachments/assets/9aa65e82-21f0-4d7b-b57b-daf6e8759a4b
