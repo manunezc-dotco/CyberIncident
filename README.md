@@ -459,6 +459,7 @@ Anexo C: Referencias Técnicas
 11. Información del Documento
 
 Documentación elaborada por: Maicol Nuñez - Nicolas Castro - Harold Neuta - Sebastian Garcia
+
 Fecha: Enero 2026
 
 
