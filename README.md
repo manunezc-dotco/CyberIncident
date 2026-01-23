@@ -358,19 +358,27 @@ Solución:
 9. Evidencias del Sistema
 
 9.1 Evidencias de Amazon EC2
+
 <img width="1900" height="734" alt="image" src="https://github.com/user-attachments/assets/dc5282e3-e690-4e64-b32f-12e5098fea60" />
 
 Figura 3: Configuración del Security Group asociado
+
 <img width="1890" height="736" alt="image" src="https://github.com/user-attachments/assets/4bd370bb-311a-4875-9548-be537f0b9f38" />
+
 <img width="1919" height="735" alt="image" src="https://github.com/user-attachments/assets/7f304160-8df0-44ee-8bf4-c68b4f466f4b" />
+
 <img width="1409" height="676" alt="image" src="https://github.com/user-attachments/assets/f87faaa9-69d0-4e56-86c8-ff32a2442744" />
+
 <img width="832" height="468" alt="image" src="https://github.com/user-attachments/assets/e5344a87-d6b8-4eab-8c81-9b15a80f4ee2" />
 
 9.2 Evidencias de la Base de Datos (RDS / MySQL)
 
 <img width="1574" height="494" alt="image" src="https://github.com/user-attachments/assets/befb902e-c7ac-4621-b35f-24ee1044d86f" />
+
 <img width="1212" height="421" alt="image" src="https://github.com/user-attachments/assets/5e195e6d-c7b8-4afb-9b91-1408bd6e18a9" />
+
 <img width="702" height="326" alt="image" src="https://github.com/user-attachments/assets/1d26871f-87a6-49a1-9e21-49b350556506" />
+
 <img width="1691" height="547" alt="image" src="https://github.com/user-attachments/assets/c2d9e0e4-d7b6-49b8-b0a4-fa15d6da187f" />
 
 9.3 Evidencias de Amazon S3
@@ -379,17 +387,16 @@ Figura 3: Configuración del Security Group asociado
 
 9.4 Evidencias del Funcionamiento de la Aplicación
 
-Figura 15: Formulario de registro de incidentes
-Figura 16: Incidentes creados correctamente
-Figura 17: Subida de evidencias desde la aplicación
-Figura 18: Consulta del historial de incidentes
-Figura 19: Registros de logs del sistema
+<img width="1919" height="940" alt="image" src="https://github.com/user-attachments/assets/92ff1552-8d03-4b4e-b0ac-fdaf8ae36f21" />
 
-9.5 Evidencias de Integración entre Servicios AWS
+<img width="1031" height="770" alt="image" src="https://github.com/user-attachments/assets/76df2867-3182-42fa-80af-d2c5c68d9afb" />
 
-Figura 20: EC2 accediendo a RDS
-Figura 21: EC2 subiendo archivos a S3
-Figura 22: Registros en la base de datos con referencias a objetos almacenados en S3
+<img width="861" height="748" alt="image" src="https://github.com/user-attachments/assets/77266689-71ea-427e-823d-cfa5af350737" />
+
+<img width="1199" height="203" alt="image" src="https://github.com/user-attachments/assets/03d29f94-1508-4ca7-a257-b49e346464d7" />
+
+<img width="510" height="404" alt="image" src="https://github.com/user-attachments/assets/58f31df4-e9af-4e86-b623-48a195b7ecc5" />
+
 
 ---
 
