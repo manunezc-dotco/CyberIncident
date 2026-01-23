@@ -1,7 +1,7 @@
 Sistema de Gestión de Incidentes de Seguridad en AWS
 
 ---
-
+ 
 1. Introducción y Contexto
 
 1.1 Contexto del Proyecto
