@@ -346,7 +346,6 @@ cyberincident/
 │   ├── nuevo_incidente.html
 │   ├── detalle.html
 │   ├── historial.html
-│   └── error.html
 ├── static/
 │   ├── css/
 │   ├── js/
