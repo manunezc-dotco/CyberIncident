@@ -1,5 +1,3 @@
-Documentación del Sistema CyberIncident
-
 Sistema de Gestión de Incidentes de Seguridad en AWS
 
 ---
