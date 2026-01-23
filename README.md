@@ -132,6 +132,118 @@ Tablas principales:
 3. Configurar parámetros de seguridad
 4. Iniciar servicio
 
+Evidencias de Uso y Funcionamiento del Sistema
+
+Este apartado tiene como finalidad demostrar, mediante capturas de pantalla y registros técnicos, el uso efectivo de los servicios de Amazon Web Services y el correcto funcionamiento del sistema CyberIncident.
+
+1. Evidencias de Amazon EC2
+
+En esta sección se deben incluir pruebas de que la instancia EC2 fue creada, configurada y utilizada para alojar la aplicación.
+
+Evidencias sugeridas:
+
+Estado de la instancia EC2 en ejecución (Running).
+
+Detalles generales de la instancia (ID, tipo, región, sistema operativo).
+
+Configuración del Security Group asociado.
+
+Conexión exitosa por SSH desde un cliente local.
+
+Acceso a la aplicación web mediante la IP pública o DNS.
+
+Descripción ejemplo:
+
+La figura X muestra la instancia EC2 en estado operativo, la cual aloja la aplicación backend desarrollada en Flask.
+
+2. Evidencias de la Base de Datos (RDS / MySQL)
+
+Esta sección demuestra el uso de la base de datos como almacenamiento persistente de información.
+
+Evidencias sugeridas:
+
+Estado de la instancia RDS como disponible.
+
+Endpoint de conexión configurado.
+
+Conexión exitosa desde la instancia EC2.
+
+Ejecución de consultas SQL que evidencien datos almacenados.
+
+Descripción ejemplo:
+
+En la figura X se evidencia la conexión exitosa a la base de datos MySQL alojada en Amazon RDS y la persistencia de información de incidentes.
+
+3. Evidencias de Amazon S3
+
+Aquí se demuestra el uso de S3 como repositorio de evidencias digitales.
+
+Evidencias sugeridas:
+
+Bucket cyberincident creado.
+
+Estructura de carpetas evidencias/{incidente_id}/.
+
+Archivos cargados (capturas, documentos, logs).
+
+Configuración de bloqueo de acceso público.
+
+Encriptación habilitada en el bucket.
+
+Descripción ejemplo:
+
+La figura X muestra el uso de Amazon S3 para el almacenamiento seguro de evidencias asociadas a incidentes de seguridad.
+
+4. Evidencias del Funcionamiento de la Aplicación
+
+En esta sección se presentan pruebas del uso del sistema desde la interfaz de usuario.
+
+Evidencias sugeridas:
+
+Formulario de registro de incidentes.
+
+Incidentes creados correctamente.
+
+Subida de evidencias desde la aplicación.
+
+Consulta del historial de incidentes.
+
+Registros de logs del sistema.
+
+Descripción ejemplo:
+
+La figura X evidencia el registro y la consulta de incidentes de seguridad a través de la aplicación CyberIncident.
+
+5. Evidencias de Integración entre Servicios AWS
+
+Esta sección es clave para demostrar que los servicios trabajan de forma integrada.
+
+Evidencias sugeridas:
+
+EC2 accediendo a RDS.
+
+EC2 subiendo archivos a S3.
+
+Registros en la base de datos con referencias a objetos almacenados en S3.
+
+Descripción ejemplo:
+
+Las evidencias presentadas confirman la correcta integración entre EC2, RDS y S3 dentro de la arquitectura propuesta.
+
+6. Anexo D: Evidencias Gráficas (Opcional)
+
+Se recomienda incluir un anexo exclusivo para capturas de pantalla.
+
+Ejemplo de estructura:
+
+Figura 1. Instancia EC2 en ejecución.
+
+Figura 2. Conexión a la base de datos RDS.
+
+Figura 3. Bucket S3 con evidencias almacenadas.
+
+Figura 4. Registro de incidente en la aplicación.
+
 ### Script de Inicialización EC2
 
 ```bash
