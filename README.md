@@ -429,5 +429,5 @@ cyberincident/
 **Versión:** 1.0  
 **Estado:** Completada
 
-<img width="604" height="497" alt="image" src="https://github.com/user-attachments/assets/9aa65e82-21f0-4d7b-b57b-daf6e8759a4b" />
+<img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/9aa65e82-21f0-4d7b-b57b-daf6e8759a4b" />
 
