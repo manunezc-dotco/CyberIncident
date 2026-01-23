@@ -48,6 +48,9 @@ La arquitectura utiliza los siguientes servicios de AWS:
 
 2.3 Flujo de Datos
 
+<img width="468" height="664" alt="image" src="https://github.com/user-attachments/assets/4ca960f2-8c23-44ef-bf67-eb7a985d72e6" />
+
+
 1. Registro de Incidente
    · Usuario completa formulario
    · Aplicación valida datos
