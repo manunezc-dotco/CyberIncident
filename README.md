@@ -355,30 +355,27 @@ Solución:
 
 ---
 
-9. Evidencias del Sistema (Espacio para imágenes)
+9. Evidencias del Sistema
 
 9.1 Evidencias de Amazon EC2
+<img width="1900" height="734" alt="image" src="https://github.com/user-attachments/assets/dc5282e3-e690-4e64-b32f-12e5098fea60" />
 
-Figura 1: Estado de la instancia EC2 en ejecución (Running)
-Figura 2: Detalles generales de la instancia (ID, tipo, región, sistema operativo)
 Figura 3: Configuración del Security Group asociado
-Figura 4: Conexión exitosa por SSH desde un cliente local
-Figura 5: Acceso a la aplicación web mediante la IP pública o DNS
+<img width="1890" height="736" alt="image" src="https://github.com/user-attachments/assets/4bd370bb-311a-4875-9548-be537f0b9f38" />
+<img width="1919" height="735" alt="image" src="https://github.com/user-attachments/assets/7f304160-8df0-44ee-8bf4-c68b4f466f4b" />
+<img width="1409" height="676" alt="image" src="https://github.com/user-attachments/assets/f87faaa9-69d0-4e56-86c8-ff32a2442744" />
+<img width="832" height="468" alt="image" src="https://github.com/user-attachments/assets/e5344a87-d6b8-4eab-8c81-9b15a80f4ee2" />
 
 9.2 Evidencias de la Base de Datos (RDS / MySQL)
 
-Figura 6: Estado de la instancia RDS como disponible
-Figura 7: Endpoint de conexión configurado
-Figura 8: Conexión exitosa desde la instancia EC2
-Figura 9: Ejecución de consultas SQL que evidencien datos almacenados
+<img width="1574" height="494" alt="image" src="https://github.com/user-attachments/assets/befb902e-c7ac-4621-b35f-24ee1044d86f" />
+<img width="1212" height="421" alt="image" src="https://github.com/user-attachments/assets/5e195e6d-c7b8-4afb-9b91-1408bd6e18a9" />
+<img width="702" height="326" alt="image" src="https://github.com/user-attachments/assets/1d26871f-87a6-49a1-9e21-49b350556506" />
+<img width="1691" height="547" alt="image" src="https://github.com/user-attachments/assets/c2d9e0e4-d7b6-49b8-b0a4-fa15d6da187f" />
 
 9.3 Evidencias de Amazon S3
 
-Figura 10: Bucket cyberincident creado
-Figura 11: Estructura de carpetas evidencias/{incidente_id}/
-Figura 12: Archivos cargados (capturas, documentos, logs)
-Figura 13: Configuración de bloqueo de acceso público
-Figura 14: Encriptación habilitada en el bucket
+<img width="1919" height="435" alt="image" src="https://github.com/user-attachments/assets/ddca64ac-6881-4640-9f6b-9b4a585a99ac" />
 
 9.4 Evidencias del Funcionamiento de la Aplicación
 
