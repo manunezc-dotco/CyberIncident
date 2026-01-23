@@ -428,3 +428,6 @@ cyberincident/
 **Fecha:** Enero 2026  
 **Versión:** 1.0  
 **Estado:** Completada
+
+<img width="604" height="497" alt="image" src="https://github.com/user-attachments/assets/9aa65e82-21f0-4d7b-b57b-daf6e8759a4b" />
+
