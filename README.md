@@ -312,65 +312,6 @@ Solución:
 3. Verificar tamaño de archivo
 4. Revisar tipos de archivo permitidos
 
-### Costos Estimados
-
-Componentes AWS y costos mensuales aproximados:
-- EC2 t2.micro: $8.56 USD
-- RDS db.t3.micro: $13.68 USD
-- S3 (10GB almacenamiento): $0.23 USD
-- Transferencia de datos: $1.00 USD
-- Total estimado: $23.47 USD por mes
-
-### Mejoras Futuras
-
-#### Fase 1: Escalabilidad
-1. Implementar Auto Scaling Group
-2. Configurar Load Balancer
-3. Habilitar Multi-AZ para RDS
-4. Implementar CDN con CloudFront
-
-#### Fase 2: Seguridad Avanzada
-1. Implementar AWS WAF
-2. Configurar AWS Shield
-3. Habilitar AWS GuardDuty
-4. Implementar encriptación KMS
-
-#### Fase 3: Funcionalidades Adicionales
-1. Sistema de notificaciones
-2. API REST para integraciones
-3. Reportes automáticos
-4. Dashboard avanzado
-
-#### Fase 4: Automatización
-1. Pipeline CI/CD
-2. Infraestructura como código
-3. Monitoreo automático
-4. Backups automatizados
-
-### Conclusiones
-
-El sistema CyberIncident demuestra la implementación exitosa de una aplicación cloud-native utilizando servicios AWS. La arquitectura implementada cumple con los objetivos establecidos y proporciona una base sólida para expansión futura.
-
-#### Logros Técnicos
-1. Integración completa de servicios AWS
-2. Implementación de medidas de seguridad básicas
-3. Diseño escalable y mantenible
-4. Documentación completa del sistema
-
-#### Buenas Prácticas Aplicadas
-- Principio de menor privilegio
-- Encriptación de datos
-- Validación de inputs
-- Logging y auditoría
-- Backup y recuperación
-
-#### Valor del Proyecto
-Este sistema sirve como:
-- Caso de estudio para arquitecturas cloud
-- Prototipo para sistemas empresariales
-- Demostración de habilidades técnicas
-- Base para desarrollo de sistemas de producción
-
 ### Anexos
 
 #### Anexo A: Comandos AWS CLI Utilizados
